@@ -1,18 +1,11 @@
 #!/bin/bash
-## Создание резервных копий файлов и БД mysql, с их копированием на ftp раздел другого сервера. 
-## Написано и протестированно на os debian
-#получаем текущую дату
 DATE=`date +%F`
-#директория для локального хранения бэкапов
 BACKDIR='/backup'
-#директория для монтирования удаленого ftp раздела
 TMP_FTP='/tmp_ftp'
-#директория для хранения логов
 LOGDIR="$BACKDIR/logs"
 LOG="$LOGDIR/$DATE.log"
 mkdir -p $LOGDIR 2>/dev/null
 echo -e "start backups `date +%T`\n=====================\n" > $LOG
-#функция монтирования удаленного ftp раздела
 MOUNT_FTP () {
     FTP_USER='ftp_user'
     FTP_PASS='ftp_pass'
@@ -77,7 +70,6 @@ DELETE_OLD_REMOTE () {
     fi
 }
 MAIN_FUNCTION () {
-    MOUNT_FTP
     DUMP_FILE
     DUMP_MYSQL
     DELETE_OLD_LOCAL
@@ -95,8 +87,9 @@ CHECK_FREE_SPACE () {
         fi
     done
     grep 'no free space' $LOG\
-        && exit 0\
+        && umount $TMP_FTP; exit 0\
         || MAIN_FUNCTION
 }
+MOUNT_FTP
 CHECK_FREE_SPACE
 echo -e "end backups `date +%T`\n============================" >> $LOG
