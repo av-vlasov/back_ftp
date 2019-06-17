@@ -53,13 +53,13 @@ DUMP_MYSQL () {
     done
 }
 DELETE_OLD_LOCAL () {
-    N=3
+    N=1
     find $BACKDIR -maxdeth 1 -type f -mtime +$N -exec rm '{}' \; \
         && echo -e "delete old backups on $BACKDIR ok; `date +%T`\n" >> $LOG\
         || echo -e "delete old backups on $BACKDIR alarm; `date +%T`\n" >> $LOG
 }
 DELETE_OLD_REMOTE () {
-    N=5
+    N=2
     if ( df -h | grep $TMP_FTP &>/dev/null ); then 
     then
         find $TMP_FTP -maxdeth 1 -type f -mtime +$N -exec rm '{}' \; \
