@@ -19,7 +19,7 @@ MOUNT_FTP () {
 }
 COPY_ON_REMOTE_HOST () {
         FILE=$1
-        if ( df -h | grep $TMP_FTP &>/dev/null ); then 
+        if ( df -h | grep $TMP_FTP &>/dev/null ) 
         then
             cp $FILE $TMP_FTP\
                 && echo -e "copy $FILE on ftp host ok; `date +%T`" >> $LOG\
@@ -30,10 +30,15 @@ COPY_ON_REMOTE_HOST () {
     }
 DUMP_FILE () {
     FILE_LIST="name0:dir0 name1:dir1"
+    EXCLUDE_LIST=""
+    TAR_EXC=""
+    for LINE in $EXLUDE_LIST; do
+        TAR_EXC="$TAR_EXC --exlude $LINE"
+    done
     for LINE in $FILE_LIST; do
-        NAME=`echo $LIST | cut -d':' -f1`
-        DIR=`echo $LIST | cut -d':' -f2`
-        tar -czf $BACKDIR/$NAME_$DATE.tar.gz $DIR 2>>$LOG\
+        NAME=`echo $LINE | cut -d':' -f1`
+        DIR=`echo $LINE | cut -d':' -f2`
+        tar -czf $BACKDIR/$NAM-$DATE.tar.gz $TAR_EXC $DIR 2>>$LOG\
             && echo -e "dump file $NAME ok; `date +%T`" >> $LOG\
             || echo -e "dump file $NAME alarm; `date +%T`" >> $LOG
         COPY_ON_REMOTE_HOST "$BACKDIR/$NAME_$DATE.tar.gz"
@@ -49,7 +54,7 @@ DUMP_MYSQL () {
         mysqldump -h $HOST -P $PORT -u $USER -p$PASS $DB | gzip > $BACKDIR/$DB_$DATE.sql.gz\
             && echo -e "dump mysql $DB ok; `date +%T`" >> $LOG\
             || echo -e "dump mysql $DB alarm; `date +%T`" >> $LOG
-        COPY_ON_REMOTE_HOST "$BACKDIR/$DB_$DATE.sql.gz"
+        COPY_ON_REMOTE_HOST "$BACKDIR/$DB-$DATE.sql.gz"
     done
 }
 DELETE_OLD_LOCAL () {
@@ -60,7 +65,7 @@ DELETE_OLD_LOCAL () {
 }
 DELETE_OLD_REMOTE () {
     N=2
-    if ( df -h | grep $TMP_FTP &>/dev/null ); then 
+    if ( df -h | grep $TMP_FTP &>/dev/null ) 
     then
         find $TMP_FTP -maxdeth 1 -type f -mtime +$N -exec rm '{}' \; \
             && echo -e "delete old backups on $TMP_FTP ok; `date +%T`\n" >> $LOG\
@@ -84,11 +89,16 @@ CHECK_FREE_SPACE () {
         if [ "$FREE_SPACE" -lt "$MIN_SIZE" ]
         then
             echo -e "no free space in $P" >> $LOG
+        else
+            >/dev/null
         fi
     done
-    grep 'no free space' $LOG\
-        && umount $TMP_FTP; exit 0\
-        || MAIN_FUNCTION
+    if ( grep 'no free space' $LOG)
+    then
+        umount $TMP_FTP; exit 0
+    else
+        MAIN_FUNCTION
+    fi
 }
 MOUNT_FTP
 CHECK_FREE_SPACE
