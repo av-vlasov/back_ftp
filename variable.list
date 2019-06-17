@@ -1,0 +1,24 @@
+### variable for script ###
+## Main ##
+DATE=`date +%F`
+BACKDIR=''
+TMP_FTP=''
+LOGDIR="$BACKDIR/logs"
+LOG="$LOGDIR/$DATE.log"
+## FTP ##
+FTP_USER=''
+FTP_PASS=''
+FTP_HOST=''
+FTP_PATH=''
+##Files##
+FILE_LIST=""
+EXCLUDE_LIST=""
+##Mysql##
+HOST='localhost'
+PORT='3306'
+USER='root'
+PASS='password'
+DB_LIST=""
+##Check free space##
+PART=""
+MIN_SIZE=''

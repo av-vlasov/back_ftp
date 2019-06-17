@@ -1,16 +1,8 @@
 #!/bin/bash
-DATE=`date +%F`
-BACKDIR='/backup'
-TMP_FTP='/tmp_ftp'
-LOGDIR="$BACKDIR/logs"
-LOG="$LOGDIR/$DATE.log"
+source ./variable.list
 mkdir -p $LOGDIR 2>/dev/null
 echo -e "start backups `date +%T`\n=====================\n" > $LOG
 MOUNT_FTP () {
-    FTP_USER='ftp_user'
-    FTP_PASS='ftp_pass'
-    FTP_HOST='ftp_host'
-    FTP_PATH='/'
     if ( dpkg -s curlftpfs ); then >/dev/null; else apt install -y curlftpfs; fi
     mkdir -p $TMP_FTP 2>/dev/null
     curlftp ftp://$FTP_USER:$FTP_PASS@$FTP_HOST$FTP_PATH $TMP_FTP 2>$LOG\
@@ -29,8 +21,6 @@ COPY_ON_REMOTE_HOST () {
         fi
     }
 DUMP_FILE () {
-    FILE_LIST="name0:dir0 name1:dir1"
-    EXCLUDE_LIST=""
     TAR_EXC=""
     for LINE in $EXLUDE_LIST; do
         TAR_EXC="$TAR_EXC --exlude $LINE"
@@ -45,11 +35,6 @@ DUMP_FILE () {
     done
 }
 DUMP_MYSQL () {
-    HOST='localhost'
-    PORT='3306'
-    USER='root'
-    PASS='password'
-    DB_LIST="dbname0 dbname1"
     for DB in $DB_LIST; do
         mysqldump -h $HOST -P $PORT -u $USER -p$PASS $DB | gzip > $BACKDIR/$DB_$DATE.sql.gz\
             && echo -e "dump mysql $DB ok; `date +%T`" >> $LOG\
@@ -82,8 +67,6 @@ MAIN_FUNCTION () {
     umount $TMP_FTP
 }
 CHECK_FREE_SPACE () {
-    PART="home backup"
-    MIN_SIZE='30'
     for P in $PART; do
         FREE_SPACE=`df -h | grep "$P" | awk '{print$4}' | sed 's/G//'`
         if [ "$FREE_SPACE" -lt "$MIN_SIZE" ]
