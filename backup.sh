@@ -1,7 +1,15 @@
 #!/bin/bash
-source ./variable.list
+source WORKDIR/variable.list
 mkdir -p $LOGDIR 2>/dev/null
 echo -e "start backups `date +%T`\n=====================\n" > $LOG
+DEF_OS () {
+    OS-RELEASE='/etc/os-release'
+    if ( grep "Debian\|Ubuntu\|Linux Mint" ); then
+        if ( dpkg -s curlftpfs ); then >/dev/null; else apt install -y curlftpfs; fi
+    elif ( grep "CentOS\|Fedora\|Red" ); then
+        if ( rpm -qa | grep curlftpfs ); then >/dev/null; else yum install -y curlfptfs; fi
+    fi
+}
 MOUNT_FTP () {
     if ( dpkg -s curlftpfs ); then >/dev/null; else apt install -y curlftpfs; fi
     mkdir -p $TMP_FTP 2>/dev/null
@@ -44,7 +52,7 @@ DUMP_MYSQL () {
 }
 DELETE_OLD_LOCAL () {
     N=1
-    find $BACKDIR -maxdeth 1 -type f -mtime +$N -exec rm '{}' \; \
+    find $BACKDIR -maxdepth 1 -type f -mtime +$N -exec rm '{}' \; \
         && echo -e "delete old backups on $BACKDIR ok; `date +%T`\n" >> $LOG\
         || echo -e "delete old backups on $BACKDIR alarm; `date +%T`\n" >> $LOG
 }
@@ -52,7 +60,7 @@ DELETE_OLD_REMOTE () {
     N=2
     if ( df -h | grep $TMP_FTP &>/dev/null ) 
     then
-        find $TMP_FTP -maxdeth 1 -type f -mtime +$N -exec rm '{}' \; \
+        find $TMP_FTP -maxdepth 1 -type f -mtime +$N -exec rm '{}' \; \
             && echo -e "delete old backups on $TMP_FTP ok; `date +%T`\n" >> $LOG\
             || echo -e "delete old backups on $TMP_FTP alarm; `date +%T`\n" >> $LOG
     else
