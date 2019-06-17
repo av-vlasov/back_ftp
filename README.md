@@ -1,5 +1,5 @@
 # back_ftp
---- autor [av.vlasov](https://github.com/skazochnik2007/) ---
+*autor [av.vlasov](https://github.com/skazochnik2007/)*
 # Бэкапирование файлов и БД mysql с хранением локальных копий и копированием их на ftp для debian.
 
 ## переменные:
